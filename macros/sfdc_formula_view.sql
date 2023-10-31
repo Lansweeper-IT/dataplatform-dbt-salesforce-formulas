@@ -33,7 +33,9 @@
 -- defaults to all formula fields if fields_to_include is none
 {% if fields_to_include is none %}
     {% set fields_to_include = current_formula_fields | lower %}
-{% endif %}
+{% endif %} 
+
+{{ exceptions.warn("\nWARNING, Deprecated: full_statement_version=false is no longer supported and will produce only null values. Be sure to update your " ~ this.identifier|upper ~ " model to remove the full_statement_version=false parameter.\n") }}
 
     select
 
