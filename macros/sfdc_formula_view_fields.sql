@@ -1,7 +1,7 @@
-{%- macro sfdc_formula_view_fields(join_to_table, source_name = 'salesforce', inclusion_fields=none, not_null_value=true) -%}
+{%- macro sfdc_formula_view_fields(join_to_table, source_name = 'PROD_STAGING_SALESFORCE_MODELPREP', inclusion_fields=none, not_null_value=true) -%}
 
 --Generate the key value pair from the view_sql field within the formula table with the below macro.
-{%- set key_val = salesforce_formula_utils.sfdc_get_formula_column_values(source(source_name, 'fivetran_formula'), 'field', 'view_sql', join_to_table, not_null_value) -%}
+{%- set key_val = salesforce_formula_utils.sfdc_get_formula_column_values(source(source_name, 'FIVETRAN_FORMULA'), 'field', 'view_sql', join_to_table, not_null_value) -%}
 
 --Only run the below code if the key_val for view_sql contains data
 {% if key_val is not none %}

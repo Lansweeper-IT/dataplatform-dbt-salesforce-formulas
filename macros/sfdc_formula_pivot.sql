@@ -1,4 +1,4 @@
-{%- macro sfdc_formula_pivot(join_to_table, source_name='salesforce', added_inclusion_fields=none) -%}
+{%- macro sfdc_formula_pivot(join_to_table, source_name='PROD_STAGING_SALESFORCE_MODELPREP', added_inclusion_fields=none) -%}
 
 -- The results generated from sfdc_formula_refactor are set to the key_val variable.
 {%- set key_val = salesforce_formula_utils.sfdc_formula_refactor(join_to_table, source_name) -%}

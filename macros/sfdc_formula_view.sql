@@ -1,4 +1,4 @@
-{%- macro sfdc_formula_view(source_table, source_name='salesforce', reserved_table_name=source_table, fields_to_include=none, full_statement_version=true, materialization='view', using_quoted_identifiers=False) -%}
+{%- macro sfdc_formula_view(source_table, source_name='PROD_STAGING_SALESFORCE_MODELPREP', reserved_table_name=source_table, fields_to_include=none, full_statement_version=true, materialization='view', using_quoted_identifiers=False) -%}
 
 -- Best practice for this model is to be materialized as view. That is why we have set that here.
 {{
@@ -15,12 +15,12 @@
 
 {% if full_statement_version %}
 {% if using_quoted_identifiers %}
-{%- set table_results = dbt_utils.get_column_values(table=source(source_name, 'fivetran_formula_model'), 
+{%- set table_results = dbt_utils.get_column_values(table=ref('stg_salesforce_formula_fields_all_records'), 
                                                     column='"MODEL"' if target.type in ('snowflake') else '"model"' if target.type in ('postgres', 'redshift', 'snowflake') else '`model`', 
                                                     where=("\"OBJECT\" = '" if target.type in ('snowflake') else "\"object\" = '" if target.type in ('postgres', 'redshift') else "`object` = '") ~ source_table ~ "'") -%}
 
 {% else %}
-{%- set table_results = dbt_utils.get_column_values(table=source(source_name, 'fivetran_formula_model'), column='model', where="object = '" ~ source_table ~ "'") -%}
+{%- set table_results = dbt_utils.get_column_values(table=ref('stg_salesforce_formula_fields_all_records'), column='model', where="object = '" ~ source_table | lower ~ "'") -%}
 
 {% endif %}
 
@@ -28,7 +28,7 @@
 
 {% else %}
 
-{%- set current_formula_fields = (salesforce_formula_utils.sfdc_current_formula_values(source(source_name, 'fivetran_formula'),'field',source_table)) | upper -%}  --In Snowflake the fields are case sensitive in order to determine if there are duplicates.
+{%- set current_formula_fields = (salesforce_formula_utils.sfdc_current_formula_values(source(source_name, 'FIVETRAN_FORMULA'),'field',source_table)) | upper -%}  --In Snowflake the fields are case sensitive in order to determine if there are duplicates.
 
 -- defaults to all formula fields if fields_to_include is none
 {% if fields_to_include is none %}
