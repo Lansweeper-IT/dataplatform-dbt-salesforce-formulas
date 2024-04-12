@@ -1,4 +1,4 @@
-{%- macro sfdc_formula_view(source_table, source_name='salesforce', reserved_table_name=source_table, fields_to_include=none, full_statement_version=true, materialization='view', using_quoted_identifiers=False) -%}
+{%- macro sfdc_formula_view(source_table, source_name='PROD_STAGING_SALESFORCE_MODELPREP', reserved_table_name=source_table, fields_to_include=none, full_statement_version=true, materialization='view', using_quoted_identifiers=False) -%}
 
 -- Best practice for this model is to be materialized as view. That is why we have set that here.
 {{
@@ -15,12 +15,12 @@
 
 {% if full_statement_version %}
 {% if using_quoted_identifiers %}
-{%- set table_results = dbt_utils.get_column_values(table=source(source_name, 'fivetran_formula_model'), 
+{%- set table_results = dbt_utils.get_column_values(table=ref('stg_salesforce_formula_fields_all_records'), 
                                                     column='"MODEL"' if target.type in ('snowflake') else '"model"' if target.type in ('postgres', 'redshift', 'snowflake') else '`model`', 
                                                     where=("\"OBJECT\" = '" if target.type in ('snowflake') else "\"object\" = '" if target.type in ('postgres', 'redshift') else "`object` = '") ~ source_table ~ "'") -%}
 
 {% else %}
-{%- set table_results = dbt_utils.get_column_values(table=source(source_name, 'fivetran_formula_model'), column='model', where="object = '" ~ source_table ~ "'") -%}
+{%- set table_results = dbt_utils.get_column_values(table=ref('stg_salesforce_formula_fields_all_records'), column='model', where="object = '" ~ source_table | lower ~ "'") -%}
 
 {% endif %}
 
@@ -28,25 +28,23 @@
 
 {% else %}
 
-{%- set current_formula_fields = (salesforce_formula_utils.sfdc_current_formula_values(source(source_name, 'fivetran_formula'),'field',source_table)) | upper -%}  --In Snowflake the fields are case sensitive in order to determine if there are duplicates.
+{%- set current_formula_fields = (sfdc_current_formula_values(source(source_name, 'FIVETRAN_FORMULA'),'field',source_table)) | upper -%}  --In Snowflake the fields are case sensitive in order to determine if there are duplicates.
 
 -- defaults to all formula fields if fields_to_include is none
 {% if fields_to_include is none %}
     {% set fields_to_include = current_formula_fields | lower %}
-{% endif %} 
-
-{{ exceptions.warn("\nWARNING, Deprecated: full_statement_version=false is no longer supported and will stop working on October 1st, 2023. Be sure to update your " ~ this.identifier|upper ~ " model to leverage full_statement_version=true before then. See https://github.com/fivetran/dbt_salesforce_formula_utils#step-4-create-models for more details.\n") }}
+{% endif %}
 
     select
 
-        {{ salesforce_formula_utils.sfdc_star_exact(source(source_name,source_table), relation_alias=(source_table + "__table"), except=current_formula_fields) }} --Querying the source table and excluding the old formula fields if they are present.
+        {{ sfdc_star_exact(source(source_name,source_table), relation_alias=(source_table + "__table"), except=current_formula_fields) }} --Querying the source table and excluding the old formula fields if they are present.
 
-        {{ salesforce_formula_utils.sfdc_formula_view_fields(join_to_table=source_table, source_name=source_name, inclusion_fields=fields_to_include) }} --Adds the field names for records that leverage the view_sql logic.
+        {{ sfdc_formula_view_fields(join_to_table=source_table, source_name=source_name, inclusion_fields=fields_to_include) }} --Adds the field names for records that leverage the view_sql logic.
 
-        {{ salesforce_formula_utils.sfdc_formula_pivot(join_to_table=source_table, source_name=source_name, added_inclusion_fields=fields_to_include) }} --Adds the results of the sfdc_formula_pivot macro as the remainder of the sql query.
+        {{ sfdc_formula_pivot(join_to_table=source_table, source_name=source_name, added_inclusion_fields=fields_to_include) }} --Adds the results of the sfdc_formula_pivot macro as the remainder of the sql query.
 
     from {{ source(source_name,source_table) }} as {{ source_table }}__table
 
-    {{ salesforce_formula_utils.sfdc_formula_view_sql(join_to_table=source_table, source_name=source_name, inclusion_fields=fields_to_include) }} --If view_sql logic is used, queries are inserted here as well as the where clause.
+    {{ sfdc_formula_view_sql(join_to_table=source_table, source_name=source_name, inclusion_fields=fields_to_include) }} --If view_sql logic is used, queries are inserted here as well as the where clause.
 {% endif %}
 {%- endmacro -%}

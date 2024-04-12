@@ -1,7 +1,7 @@
-{%- macro sfdc_formula_view_sql(join_to_table, source_name = 'salesforce', reserved_table_name=source_table, inclusion_fields=none, not_null_value=true) -%}
+{%- macro sfdc_formula_view_sql(join_to_table, source_name = 'PROD_STAGING_SALESFORCE_MODELPREP', reserved_table_name=source_table, inclusion_fields=none, not_null_value=true) -%}
 
     --Generate the key value pair from the formula field table with the below macro.
-    {%- set key_val = salesforce_formula_utils.sfdc_get_formula_column_values(source(source_name, 'fivetran_formula'), 'field', 'view_sql', join_to_table, not_null_value) -%}
+    {%- set key_val = sfdc_get_formula_column_values(source(source_name, 'FIVETRAN_FORMULA'), 'field', 'view_sql', join_to_table, not_null_value) -%}
 
     {%- set view_sql_ref = [] -%}
 
@@ -11,17 +11,17 @@
 
             --The select statement must explicitly query from and join from the source, not the target. The replace filters point the query to the source.
             {% if ' from ' in v %}
-                {%- set v = v | replace(' from ',' from ' + source(source_name,'fivetran_formula') | string ) -%}
-                {% if target.type in ('bigquery', 'spark', 'databricks') %} {%- set v = v | replace('`fivetran_formula`','') -%} 
-                {% elif target.type in ('redshift','postgres') %} {%- set v = v | replace('"fivetran_formula"', '') -%} 
-                {% else %} {%- set v = v | replace('fivetran_formula','') -%} {% endif %}
+                {%- set v = v | replace(' from ',' from ' + source(source_name,'FIVETRAN_FORMULA') | string ) -%}
+                {% if target.type == 'bigquery' %} {%- set v = v | replace('`FIVETRAN_FORMULA`','') -%} 
+                {% elif target.type == 'redshift' %} {%- set v = v | replace('"FIVETRAN_FORMULA"', '') -%} 
+                {% else %} {%- set v = v | replace('FIVETRAN_FORMULA','') -%} {% endif %}
             {% endif %}
 
             {% if ' left join ' in v %}
-                {%- set v = v | replace(' left join ',' left join ' + source(source_name,'fivetran_formula') | string ) -%}
-                {% if target.type in ('bigquery', 'spark', 'databricks') %} {%- set v = v | replace('`fivetran_formula`','') -%} 
-                {% elif target.type in ('redshift','postgres') %} {%- set v = v | replace('"fivetran_formula"', '') -%} 
-                {% else %} {%- set v = v | replace('fivetran_formula','') -%} {% endif %}
+                {%- set v = v | replace(' left join ',' left join ' + source(source_name,'FIVETRAN_FORMULA') | string ) -%}
+                {% if target.type == 'bigquery' %} {%- set v = v | replace('`FIVETRAN_FORMULA`','') -%} 
+                {% elif target.type == 'redshift' %} {%- set v = v | replace('"FIVETRAN_FORMULA"', '') -%} 
+                {% else %} {%- set v = v | replace('FIVETRAN_FORMULA','') -%} {% endif %}
             {% endif %}
 
             --To ensure the reference is unique across view sql the index of the loop is used in the reference name
