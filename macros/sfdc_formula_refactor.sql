@@ -1,7 +1,7 @@
 {%- macro sfdc_formula_refactor(join_to_table, source_name = 'PROD_STAGING_SALESFORCE_MODELPREP') -%}
 
     --Generate the key value pair from the formula field table with the below macro.
-    {%- set key_val = sfdc_get_formula_column_values(source(source_name, 'FIVETRAN_FORMULA'), 'field', 'sql', join_to_table) -%}
+    {%- set key_val = salesforce_formula_utils.sfdc_get_formula_column_values(source(source_name, 'FIVETRAN_FORMULA'), 'field', 'sql', join_to_table) -%}
 
     --Creating a permanent array to be carried over after this macro.
     {%- set adjusted_key_val = [] -%}

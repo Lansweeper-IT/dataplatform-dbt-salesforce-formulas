@@ -1,7 +1,7 @@
 {%- macro sfdc_formula_view_sql(join_to_table, source_name = 'PROD_STAGING_SALESFORCE_MODELPREP', reserved_table_name=source_table, inclusion_fields=none, not_null_value=true) -%}
 
     --Generate the key value pair from the formula field table with the below macro.
-    {%- set key_val = sfdc_get_formula_column_values(source(source_name, 'FIVETRAN_FORMULA'), 'field', 'view_sql', join_to_table, not_null_value) -%}
+    {%- set key_val = salesforce_formula_utils.sfdc_get_formula_column_values(source(source_name, 'FIVETRAN_FORMULA'), 'field', 'view_sql', join_to_table, not_null_value) -%}
 
     {%- set view_sql_ref = [] -%}
 
